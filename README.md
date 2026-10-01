@@ -28,6 +28,10 @@ The project demonstrates how an application evolves from a simple locally runnin
 
 - GitHub source repository
 
+- Dockerized application
+
+- Gunicorn production WSGI server
+
 
 
 ## API Endpoints
@@ -75,14 +79,13 @@ Currently:
 - Git
 
 - GitHub
+- Docker
+
+- Gunicorn
 
 
 
 ### Planned DevOps Tooling
-
-
-
-- Docker
 
 - GitHub Actions
 
