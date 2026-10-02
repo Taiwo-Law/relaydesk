@@ -38,12 +38,15 @@ jobs:
         run: docker run -d --name relaydesk-ci -p 5000:5000 relaydesk:ci
 
       - name: Smoke test container
-        run: curl --fail --retry 10 --retry-delay 1 --retry-connrefused http://127.0.0.1:5000/health
+        run: curl --fail --retry 10 --retry-delay 1 --retry-all-errors http://127.0.0.1:5000/health
 
-      - name: Show container logs
+      - name: Show container diagnostics
         if: always()
-        run: docker logs relaydesk-ci || true
+        run: |
+          docker ps -a
+          docker logs relaydesk-ci || true
 
       - name: Stop Docker container
         if: always()
         run: docker rm -f relaydesk-ci || true
+
