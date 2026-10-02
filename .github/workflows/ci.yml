@@ -33,3 +33,17 @@ jobs:
 
       - name: Build Docker image
         run: docker build -t relaydesk:ci .
+
+      - name: Start Docker container
+        run: docker run -d --name relaydesk-ci -p 5000:5000 relaydesk:ci
+
+      - name: Smoke test container
+        run: curl --fail --retry 10 --retry-delay 1 --retry-connrefused http://127.0.0.1:5000/health
+
+      - name: Show container logs
+        if: always()
+        run: docker logs relaydesk-ci || true
+
+      - name: Stop Docker container
+        if: always()
+        run: docker rm -f relaydesk-ci || true
