@@ -32,6 +32,14 @@ The project demonstrates how an application evolves from a simple locally runnin
 
 - Gunicorn production WSGI server
 
+- Automated testing with pytest
+
+- GitHub Actions continuous integration
+
+- Automated Docker image builds in CI
+
+- Container health smoke testing
+
 
 
 ## API Endpoints
@@ -79,21 +87,22 @@ Currently:
 - Git
 
 - GitHub
+
 - Docker
 
 - Gunicorn
+
+- pytest
+
+- GitHub Actions
 
 
 
 ### Planned DevOps Tooling
 
-- GitHub Actions
-
 - Terraform
 
 - AWS
-
-- Automated testing
 
 - Monitoring and observability
 
