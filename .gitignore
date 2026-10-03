@@ -10,3 +10,5 @@ __pycache__/
 *.tfvars
 .terraform.tfstate.lock.info
 crash.log
+tfplan
+*.tfplan
