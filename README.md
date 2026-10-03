@@ -2,7 +2,7 @@
 
 
 
-RelayDesk is a production-style Flask service built as an end-to-end DevOps portfolio project.
+RelayDesk is a production style Flask service built as an end to end DevOps portfolio project.
 
 
 
@@ -39,6 +39,12 @@ The project demonstrates how an application evolves from a simple locally runnin
 - Automated Docker image builds in CI
 
 - Container health smoke testing
+
+- Automated container publishing to GitHub Container Registry
+
+- Commit-SHA and `latest` Docker image tagging
+
+- Published container pull-and-run verification
 
 
 
@@ -95,6 +101,8 @@ Currently:
 - pytest
 
 - GitHub Actions
+
+- GitHub Container Registry (GHCR)
 
 
 
