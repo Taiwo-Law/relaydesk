@@ -11,6 +11,18 @@ data "aws_iam_policy_document" "github_actions_deploy" {
       aws_ecs_service.relaydesk.id
     ]
   }
+
+  statement {
+    effect = "Allow"
+
+    actions = [
+      "ecs:ListTasks",
+      "ecs:DescribeTasks",
+      "ec2:DescribeNetworkInterfaces"
+    ]
+
+    resources = ["*"]
+  }
 }
 
 resource "aws_iam_role_policy" "github_actions_deploy" {
