@@ -25,3 +25,9 @@ variable "public_subnet_cidrs" {
     "10.0.2.0/24"
   ]
 }
+
+variable "ecs_desired_count" {
+  description = "Number of RelayDesk Fargate tasks to run"
+  type        = number
+  default     = 0
+}
