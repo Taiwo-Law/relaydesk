@@ -23,9 +23,26 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Detect application changes
+        id: app_changes
+        if: github.event_name == 'push'
+        shell: bash
+        run: |
+          if git diff --quiet "${{ github.event.before }}" "${{ github.sha }}" -- \
+            app.py \
+            Dockerfile \
+            requirements.txt \
+            .dockerignore; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Log in to GitHub Container Registry
-        if: github.event_name == 'push'
+	if: github.event_name == 'push' && steps.app_changes.outputs.changed == 'true'
         uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
@@ -62,26 +79,29 @@ jobs:
         run: terraform validate
 
       - name: Build Docker image
+	if: github.event_name == 'pull_request' || steps.app_changes.outputs.changed == 'true'
         run: docker build -t relaydesk:ci .
 
       - name: Start Docker container
+	if: github.event_name == 'pull_request' || steps.app_changes.outputs.changed == 'true'
         run: docker run -d --name relaydesk-ci -p 5000:5000 relaydesk:ci
 
       - name: Smoke test container
+	if: github.event_name == 'pull_request' || steps.app_changes.outputs.changed == 'true'
         run: curl --fail --retry 10 --retry-delay 1 --retry-all-errors http://127.0.0.1:5000/health
 
       - name: Show container diagnostics
-        if: always()
+        if: always() && (github.event_name == 'pull_request' || steps.app_changes.outputs.changed == 'true')
         run: |
           docker ps -a
           docker logs relaydesk-ci || true
 
       - name: Stop Docker container
-        if: always()
+        if: always() && (github.event_name == 'pull_request' || steps.app_changes.outputs.changed == 'true')
         run: docker rm -f relaydesk-ci || true
 
       - name: Publish Docker image
-        if: github.event_name == 'push' && success()
+        if: github.event_name == 'push' && steps.app_changes.outputs.changed == 'true' && success()
         run: |
           docker tag relaydesk:ci ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
           docker tag relaydesk:ci ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
@@ -89,14 +109,14 @@ jobs:
           docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
 
       - name: Configure AWS credentials
-        if: github.event_name == 'push' && success()
+        if: github.event_name == 'push' && steps.app_changes.outputs.changed == 'true' && success()
         uses: aws-actions/configure-aws-credentials@v6.3.0
         with:
           role-to-assume: arn:aws:iam::203918848327:role/relaydesk-github-actions-role
           aws-region: ca-central-1
 
       - name: Deploy RelayDesk to ECS
-        if: github.event_name == 'push' && success()
+        if: github.event_name == 'push' && steps.app_changes.outputs.changed == 'true' && success()
         run: |
           aws ecs update-service \
             --cluster relaydesk-cluster \
@@ -105,7 +125,7 @@ jobs:
             --region ca-central-1
 
       - name: Wait for ECS service stability
-        if: github.event_name == 'push' && success()
+        if: github.event_name == 'push' && steps.app_changes.outputs.changed == 'true' && success()
         run: |
           aws ecs wait services-stable \
             --cluster relaydesk-cluster \
@@ -113,7 +133,7 @@ jobs:
             --region ca-central-1
 
       - name: Verify deployed RelayDesk health
-        if: github.event_name == 'push' && success()
+        if: github.event_name == 'push' && steps.app_changes.outputs.changed == 'true' && success()
         timeout-minutes: 3
         shell: bash
         run: |
