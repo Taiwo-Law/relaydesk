@@ -114,6 +114,7 @@ jobs:
 
       - name: Verify deployed RelayDesk health
         if: github.event_name == 'push' && success()
+        timeout-minutes: 3
         shell: bash
         run: |
           TASK_ARN=$(aws ecs list-tasks \
@@ -140,9 +141,9 @@ jobs:
           echo "Testing RelayDesk at http://${PUBLIC_IP}:5000/health"
 
           curl --fail \
+            --connect-timeout 5 \
+            --max-time 10 \
             --retry 10 \
             --retry-delay 2 \
             --retry-all-errors \
             "http://${PUBLIC_IP}:5000/health"
-
-
