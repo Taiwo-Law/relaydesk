@@ -18,6 +18,13 @@ resource "aws_cloudwatch_metric_alarm" "ecs_cpu_high" {
   threshold           = 70
   comparison_operator = "GreaterThanThreshold"
   treat_missing_data  = "notBreaching"
+  alarm_actions = [
+    aws_sns_topic.alerts.arn
+  ]
+
+  ok_actions = [
+    aws_sns_topic.alerts.arn
+  ]
 
   dimensions = {
     ClusterName = aws_ecs_cluster.main.name
@@ -36,6 +43,13 @@ resource "aws_cloudwatch_metric_alarm" "ecs_memory_high" {
   threshold           = 80
   comparison_operator = "GreaterThanThreshold"
   treat_missing_data  = "notBreaching"
+  alarm_actions = [
+    aws_sns_topic.alerts.arn
+  ]
+
+  ok_actions = [
+    aws_sns_topic.alerts.arn
+  ]
 
   dimensions = {
     ClusterName = aws_ecs_cluster.main.name

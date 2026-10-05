@@ -31,3 +31,9 @@ variable "ecs_desired_count" {
   type        = number
   default     = 0
 }
+
+variable "alert_email" {
+  description = "Email address that receives RelayDesk CloudWatch alerts"
+  type        = string
+  sensitive   = true
+}
