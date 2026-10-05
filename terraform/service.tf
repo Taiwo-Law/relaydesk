@@ -15,6 +15,11 @@ resource "aws_ecs_service" "relaydesk" {
   desired_count   = var.ecs_desired_count
   launch_type     = "FARGATE"
 
+  deployment_circuit_breaker {
+    enable   = true
+    rollback = true
+  }
+
   network_configuration {
     subnets          = aws_subnet.public[*].id
     security_groups  = [aws_security_group.ecs_tasks.id]
