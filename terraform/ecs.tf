@@ -38,16 +38,19 @@ resource "aws_iam_role_policy_attachment" "ecs_task_execution" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
 }
 
+# Security exception: RelayDesk currently pulls images from public GHCR
+# and requires outbound internet access. Egress is restricted to HTTPS only.
+#trivy:ignore:AWS-0104
 resource "aws_security_group" "ecs_tasks" {
   name        = "${lower(var.project_name)}-ecs-tasks-sg"
   description = "Security group for RelayDesk ECS tasks"
   vpc_id      = aws_vpc.main.id
 
   egress {
-    description = "Allow outbound traffic"
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
+    description = "Allow outbound HTTPS for image pulls and AWS service communication"
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
 

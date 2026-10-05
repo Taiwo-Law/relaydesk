@@ -1,3 +1,6 @@
+# Security exception: SNS encryption for CloudWatch alarm publishing would
+# require a customer-managed KMS key. Accepted for this low-cost portfolio environment.
+#trivy:ignore:AWS-0095
 resource "aws_sns_topic" "alerts" {
   name = "${lower(var.project_name)}-alerts"
 
