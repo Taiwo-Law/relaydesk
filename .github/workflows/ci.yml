@@ -78,6 +78,15 @@ jobs:
         working-directory: terraform
         run: terraform validate
 
+      - name: Scan Terraform security with Trivy
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          scan-type: 'config'
+          scan-ref: './terraform'
+          format: 'table'
+          exit-code: '0'
+          severity: 'HIGH,CRITICAL'
+
       - name: Build Docker image
         if: github.event_name == 'pull_request' || steps.app_changes.outputs.changed == 'true'
         run: docker build -t relaydesk:ci .
