@@ -91,6 +91,17 @@ jobs:
         if: github.event_name == 'pull_request' || steps.app_changes.outputs.changed == 'true'
         run: docker build -t relaydesk:ci .
 
+      - name: Scan Docker image with Trivy
+        if: github.event_name == 'pull_request' || steps.app_changes.outputs.changed == 'true'
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          image-ref: 'relaydesk:ci'
+          format: 'table'
+          exit-code: '0'
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'HIGH,CRITICAL'
+
       - name: Start Docker container
         if: github.event_name == 'pull_request' || steps.app_changes.outputs.changed == 'true'
         run: docker run -d --name relaydesk-ci -p 5000:5000 relaydesk:ci
