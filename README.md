@@ -45,6 +45,7 @@ The project demonstrates how an application evolves from a simple locally runnin
 - Post-deployment health verification
 - ECS deployment circuit breaker with automatic rollback
 - Cost-conscious ECS scale-to-zero workflow
+- Container image vulnerability scanning with Trivy
 
 
 
