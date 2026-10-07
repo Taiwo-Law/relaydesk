@@ -14,11 +14,13 @@ env:
 permissions:
   contents: read
   packages: write
-  id-token: write
 
 jobs:
   test:
     runs-on: ubuntu-latest
+
+    outputs:
+      app_changed: ${{ steps.app_changes.outputs.changed }}
 
     steps:
       - name: Checkout repository
@@ -135,15 +137,24 @@ jobs:
           docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
           docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
 
+  deploy:
+    name: Deploy to AWS
+    needs: test
+    if: github.event_name == 'push' && needs.test.outputs.app_changed == 'true'
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
       - name: Configure AWS credentials
-        if: github.event_name == 'push' && steps.app_changes.outputs.changed == 'true' && success()
         uses: aws-actions/configure-aws-credentials@v6.3.0
         with:
           role-to-assume: arn:aws:iam::203918848327:role/relaydesk-github-actions-role
           aws-region: ca-central-1
 
       - name: Deploy RelayDesk to ECS
-        if: github.event_name == 'push' && steps.app_changes.outputs.changed == 'true' && success()
         run: |
           aws ecs update-service \
             --cluster relaydesk-cluster \
@@ -152,7 +163,6 @@ jobs:
             --region ca-central-1
 
       - name: Wait for ECS service stability
-        if: github.event_name == 'push' && steps.app_changes.outputs.changed == 'true' && success()
         run: |
           aws ecs wait services-stable \
             --cluster relaydesk-cluster \
@@ -160,7 +170,6 @@ jobs:
             --region ca-central-1
 
       - name: Verify deployed RelayDesk health
-        if: github.event_name == 'push' && steps.app_changes.outputs.changed == 'true' && success()
         timeout-minutes: 3
         shell: bash
         run: |
@@ -176,7 +185,7 @@ jobs:
             --cluster relaydesk-cluster \
             --tasks "$TASK_ARN" \
             --region ca-central-1 \
-            --query "tasks[0].attachments[0].details[?name=='networkInterfaceId'].value | [0]" \
+            --query 'tasks[0].attachments[0].details[?name==`networkInterfaceId`].value | [0]' \
             --output text)
 
           PUBLIC_IP=$(aws ec2 describe-network-interfaces \
