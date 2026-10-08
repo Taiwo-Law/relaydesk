@@ -101,6 +101,7 @@ Example health response:
 - Amazon SNS
 
 ## AWS Architecture
+![RelayDesk CI/CD Pipeline and AWS Architecture](docs/architecture.png)
 
 RelayDesk is deployed to AWS using Terraform-managed infrastructure.
 
