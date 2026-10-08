@@ -9,7 +9,8 @@ def test_home():
     assert response.status_code == 200
     assert response.get_json() == {
         "service": "RelayDesk",
-        "status": "running"
+        "status": "running",
+        "version": "1.0.0"
     }
 
 

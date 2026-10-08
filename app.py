@@ -8,7 +8,8 @@ def home():
     return jsonify(
         {
             "service": "RelayDesk",
-            "status": "running"
+            "status": "running",
+            "version": "1.0.0"
         }
     )
 
