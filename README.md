@@ -172,6 +172,51 @@ Verify the live /health endpoint
 
 ```
 
+## Security and CI/CD Safeguards
+
+RelayDesk incorporates automated security checks, least-privilege access controls, and deployment safeguards.
+
+### Automated Security Scanning
+
+- **Gitleaks:** Scans Git changes for accidentally committed credentials, API keys, and other secrets. A separate full-history scan also verified the existing repository history.
+- **Trivy (Terraform):** Detects HIGH and CRITICAL infrastructure security misconfigurations.
+- **Trivy (Container):** Scans Docker images for HIGH and CRITICAL OS and Python dependency vulnerabilities with available fixes.
+- **CI Enforcement:** Security findings covered by the configured policies cause GitHub Actions to fail before image publishing or deployment.
+- **Container Hardening:** Removes pip from the final runtime image after dependency installation to reduce unnecessary software and attack surface.
+
+### Least-Privilege CI/CD Permissions
+
+GitHub Actions separates responsibilities into three jobs:
+
+| Job | GitHub Permissions | Responsibility |
+|-----|--------------------|----------------|
+| Test | `contents: read` | Testing, validation, security scanning |
+| Publish | `contents: read`, `packages: write` | Publish tested Docker images to GHCR |
+| Deploy | `contents: read`, `id-token: write` | Authenticate to AWS and deploy to ECS |
+
+The exact Docker image that passes security scanning and smoke testing is transferred to the publishing job through a short-lived GitHub Actions artifact.
+
+AWS authentication uses GitHub OIDC and an IAM role instead of long-lived AWS access keys.
+
+### Deployment Reliability
+
+- ECS performs container health checks against `/health`.
+- GitHub Actions waits for ECS service stability and verifies the deployed application's health.
+- ECS deployment circuit breaker enables automatic rollback of failed deployments.
+- CloudWatch alarms notify through SNS when CPU or memory thresholds are breached and when alarms recover.
+
+### Documented Security Trade-offs
+
+RelayDesk is a portfolio environment rather than a fully hardened production deployment.
+
+- ECS tasks currently use public IPv4 addresses and expose HTTP on port 5000 without a load balancer or HTTPS termination.
+- Outbound ECS traffic is limited to TCP port 443 but permits internet destinations for GHCR image pulls and AWS service communication.
+- SNS server-side encryption is not enabled to avoid the recurring cost of a customer-managed KMS key.
+- Accepted Terraform security exceptions are documented alongside the affected resources.
+
+These limitations are intentionally documented and can be addressed in future architecture improvements.
+
+
 
 ## Planned DevOps Tooling
 
