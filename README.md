@@ -217,6 +217,22 @@ RelayDesk is a portfolio environment rather than a fully hardened production dep
 These limitations are intentionally documented and can be addressed in future architecture improvements.
 
 
+## Operations Runbook
+
+RelayDesk includes an operations runbook documenting procedures for managing, monitoring, troubleshooting, and safely shutting down the AWS environment.
+
+The runbook covers:
+
+- Starting the ECS Fargate service
+- Verifying deployment and application health
+- Investigating CloudWatch logs and metrics
+- Responding to CloudWatch alarms and SNS notifications
+- Troubleshooting failed ECS deployments
+- Stopping ECS resources to minimize AWS costs
+
+**[View the RelayDesk Operations Runbook](docs/OPERATIONS.md)**
+
+
 
 ## Planned DevOps Tooling
 
