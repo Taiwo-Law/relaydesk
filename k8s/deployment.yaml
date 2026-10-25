@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: relaydesk
+  namespace: relaydesk
+
+spec:
+  replicas: 1
+
+  selector:
+    matchLabels:
+      app: relaydesk
+
+  template:
+    metadata:
+      labels:
+        app: relaydesk
+
+    spec:
+      containers:
+        - name: relaydesk
+          image: ghcr.io/taiwo-law/relaydesk@sha256:bfe9af4db9e64afec445cc4c0addfd6bacd346818ab416751433a922a2445c54
+          imagePullPolicy: Always
+
+          ports:
+            - containerPort: 5000
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 5000
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 2
+            failureThreshold: 3
+
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 5000
+            initialDelaySeconds: 15
+            periodSeconds: 10
+            timeoutSeconds: 2
+            failureThreshold: 3
+
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
