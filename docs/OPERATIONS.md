@@ -255,12 +255,13 @@ Invoke-RestMethod `
   -TimeoutSec 15
 ```
 
-Expected application response:
+Expected application response for RelayDesk v1.0.0:
 
 ```json
 {
   "service": "RelayDesk",
-  "status": "running"
+  "status": "running",
+  "version": "1.0.0"
 }
 ```
 
@@ -498,11 +499,8 @@ Investigate CloudWatch CPU and memory alerts, identify possible causes, verify s
 RelayDesk uses CloudWatch alarms to monitor ECS CPU and memory utilization.
 
 | Alarm | Threshold | Evaluation |
-
 |-------|-----------|------------|
-
 | CPU | Above 70% | 5 consecutive one-minute periods |
-
 | Memory | Above 80% | 5 consecutive one-minute periods |
 
 CloudWatch publishes alarm and recovery notifications to Amazon SNS, which delivers email notifications to the confirmed subscriber.
@@ -530,13 +528,9 @@ aws cloudwatch describe-alarms `
 Possible states:
 
 | State | Meaning |
-
 |-------|---------|
-
 | OK | Configured alarm condition is not currently met |
-
 | ALARM | Configured alarm threshold condition has been met |
-
 | INSUFFICIENT_DATA | CloudWatch does not have sufficient data to evaluate the alarm |
 
 An ALARM state indicates that the configured condition has been met. It does not automatically identify the underlying problem.
@@ -682,27 +676,16 @@ Do not manually force an alarm into the OK state to hide an unresolved issue.
 Record relevant information for future troubleshooting.
 
 | Field | Information |
-
 |-------|-------------|
-
 | Incident ID | |
-
 | Date and time | |
-
 | Alarm name | |
-
 | Initial symptoms | |
-
 | Affected service | |
-
 | Investigation findings | |
-
 | Root cause, if identified | |
-
 | Corrective action | |
-
 | Recovery verification | |
-
 | Preventive recommendations | |
 
 ### Success Criteria
@@ -764,13 +747,9 @@ Navigate to **Actions → RelayDesk CI** and select the failed workflow run.
 Identify the failed job:
 
 | Failed Job | Areas to Investigate |
-
 |---|---|
-
 | Test | Python tests, Terraform validation, secret scanning, image vulnerabilities, container smoke tests |
-
 | Publish to GHCR | Image artifact, registry authentication, Docker tags, image publishing |
-
 | Deploy to AWS | AWS OIDC authentication, ECS service update, deployment stability, health verification |
 
 Expand the failed step and review its error output.
@@ -814,13 +793,9 @@ aws ecs describe-services `
 Possible deployment states include:
 
 | State | Meaning |
-
 |---|---|
-
 | IN_PROGRESS | ECS is working toward the deployment's desired state |
-
 | COMPLETED | Deployment successfully reached a steady state |
-
 | FAILED | Deployment failed to reach a healthy steady state |
 
 Investigate a failed deployment before attempting another deployment.
@@ -882,17 +857,11 @@ if ($STOPPED.taskArns.Count -gt 0) {
 Common failure scenarios:
 
 | Symptom | Possible Cause |
-
 |---|---|
-
 | Container exits immediately | Application startup error |
-
 | Image pull failure | GHCR image, permissions, or networking issue |
-
 | Container unhealthy | `/health` endpoint failure |
-
 | Task fails to start | Configuration, resources, or IAM problem |
-
 | Deployment timeout | ECS tasks cannot reach a stable state |
 
 Recently stopped ECS tasks remain available for inspection only for a limited period, so investigate promptly.
@@ -1000,27 +969,16 @@ Do not consider the incident resolved until application functionality has been v
 ### Step 10: Document the Deployment Incident
 
 | Field | Information |
-
 |---|---|
-
 | Incident date | |
-
 | GitHub Actions run | |
-
 | Failed job or step | |
-
 | ECS deployment state | |
-
 | Error message | |
-
 | Root cause, if identified | |
-
 | Corrective action | |
-
 | Rollback status | |
-
 | Recovery verification | |
-
 | Preventive improvements | |
 
 ### Success Criteria
@@ -1185,25 +1143,15 @@ If tasks are still running, allow ECS additional time to finish stopping them an
 Scaling ECS to zero stops the application compute workload.
 
 | AWS Resource | After Shutdown | Billing Impact |
-
 |---|---|---|
-
 | ECS Fargate task | Stopped | Compute charges stop |
-
 | Task public IPv4 address | Released after task termination | Associated public IPv4 charges stop |
-
 | ECS cluster | Remains | No running Fargate compute charges |
-
 | VPC and subnets | Remain | No ordinary hourly charges for these resources alone |
-
 | Internet Gateway and route table | Remain | No ordinary hourly charges for these resources alone |
-
 | IAM roles and policies | Remain | No standard hourly charge |
-
 | CloudWatch log group | Remains | Stored logs may incur charges |
-
 | CloudWatch CPU and memory alarms | Remain | Alarm charges may continue |
-
 | SNS topic and email subscription | Remain | Usage-based charges may apply |
 
 **Important:** Scaling ECS to zero minimizes AWS costs but does not necessarily reduce the entire AWS bill to zero.
@@ -1238,23 +1186,14 @@ Stopping local Docker containers does not affect AWS billing.
 Document the shutdown for operational tracking.
 
 | Field | Information |
-
 |---|---|
-
 | Shutdown Date | |
-
 | Shutdown Time | |
-
 | AWS Region | ca-central-1 |
-
 | ECS Desired Count | 0 |
-
 | ECS Running Count | 0 |
-
 | ECS Pending Count | 0 |
-
 | Terraform Apply Status | |
-
 | Outstanding Issues | |
 
 ### Restarting RelayDesk
