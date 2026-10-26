@@ -23,6 +23,10 @@ spec:
           image: ghcr.io/taiwo-law/relaydesk@sha256:bfe9af4db9e64afec445cc4c0addfd6bacd346818ab416751433a922a2445c54
           imagePullPolicy: Always
 
+          envFrom:
+            - configMapRef:
+                name: relaydesk-config
+
           ports:
             - containerPort: 5000
           readinessProbe:
