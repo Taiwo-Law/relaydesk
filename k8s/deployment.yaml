@@ -27,6 +27,13 @@ spec:
             - configMapRef:
                 name: relaydesk-config
 
+          env:
+            - name: DEMO_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: relaydesk-demo-secret
+                  key: DEMO_API_KEY
+
           ports:
             - containerPort: 5000
           readinessProbe:
