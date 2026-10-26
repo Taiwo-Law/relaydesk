@@ -233,6 +233,27 @@ The runbook covers:
 **[View the RelayDesk Operations Runbook](docs/OPERATIONS.md)**
 
 
+## Kubernetes Deployment (Local Environment)
+
+RelayDesk v1.0.0 has been successfully deployed to a local Kubernetes cluster using Docker Desktop.
+
+The Kubernetes implementation demonstrates:
+
+- Declarative deployments using Kubernetes YAML manifests
+- A dedicated namespace and ClusterIP Service
+- Immutable Docker image references using SHA-256 digests
+- Readiness and liveness health probes
+- CPU and memory resource requests and limits
+- Horizontal scaling from one to three Pods
+- Automatic Pod replacement and self-healing
+- Rolling updates and deployment rollbacks
+- Application health verification after rollback
+
+The current Kubernetes environment uses a single local node. AWS EKS deployment is planned for a future phase.
+
+**[View Kubernetes Deployment Documentation](docs/KUBERNETES.md)**
+
+
 
 ## Planned DevOps Tooling
 
