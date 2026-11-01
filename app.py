@@ -1,6 +1,16 @@
+import logging
+import os
+
 from flask import Flask, jsonify
 
 app = Flask(__name__)
+
+app.config["RELAYDESK_ENV"] = os.getenv(
+    "RELAYDESK_ENV", "development"
+)
+
+log_level = os.getenv("LOG_LEVEL", "INFO").upper()
+app.logger.setLevel(getattr(logging, log_level, logging.INFO))
 
 
 @app.route("/")
