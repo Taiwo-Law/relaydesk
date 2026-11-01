@@ -182,7 +182,30 @@ jobs:
           role-to-assume: arn:aws:iam::203918848327:role/relaydesk-github-actions-role
           aws-region: ca-central-1
 
+      - name: Check ECS desired task count
+        id: ecs_state
+        shell: bash
+        run: |
+          DESIRED=$(aws ecs describe-services \
+            --cluster relaydesk-cluster \
+            --services relaydesk-service \
+            --region ca-central-1 \
+            --query 'services[0].desiredCount' \
+            --output text)
+
+          if [[ "$DESIRED" == "0" ]]; then
+            echo "deploy=false" >> "$GITHUB_OUTPUT"
+            echo "ECS is stopped. Skipping AWS deployment."
+          elif [[ "$DESIRED" =~ ^[1-9][0-9]*$ ]]; then
+            echo "deploy=true" >> "$GITHUB_OUTPUT"
+            echo "ECS is active. Deployment allowed."
+          else
+            echo "::error::Unexpected ECS desired count: $DESIRED"
+            exit 1
+          fi
+
       - name: Deploy RelayDesk to ECS
+        if: steps.ecs_state.outputs.deploy == 'true'
         run: |
           aws ecs update-service \
             --cluster relaydesk-cluster \
@@ -191,6 +214,7 @@ jobs:
             --region ca-central-1
 
       - name: Wait for ECS service stability
+        if: steps.ecs_state.outputs.deploy == 'true'
         run: |
           aws ecs wait services-stable \
             --cluster relaydesk-cluster \
@@ -198,6 +222,7 @@ jobs:
             --region ca-central-1
 
       - name: Verify deployed RelayDesk health
+        if: steps.ecs_state.outputs.deploy == 'true'
         timeout-minutes: 3
         shell: bash
         run: |
