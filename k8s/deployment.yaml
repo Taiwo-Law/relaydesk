@@ -20,7 +20,7 @@ spec:
     spec:
       containers:
         - name: relaydesk
-          image: ghcr.io/taiwo-law/relaydesk@sha256:bfe9af4db9e64afec445cc4c0addfd6bacd346818ab416751433a922a2445c54
+          image: ghcr.io/taiwo-law/relaydesk@sha256:6f75f54efc498faeaabd87ebafba68d2705cb952021938b82fa93f55a828de3f
           imagePullPolicy: Always
 
           envFrom:
