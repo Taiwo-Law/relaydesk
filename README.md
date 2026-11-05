@@ -1,18 +1,10 @@
 # RelayDesk
 
-
-
-RelayDesk is a production style Flask service built as an end to end DevOps portfolio project.
-
-
+RelayDesk is a production-style Flask service built as an end-to-end DevOps portfolio project.
 
 The project demonstrates how an application evolves from a simple locally running service into a containerized, automated, cloud-deployed, observable, and reliable production-style workload.
 
-
-
 ## Current Features
-
-
 
 - Flask REST service
 - Root application endpoint
@@ -29,7 +21,7 @@ The project demonstrates how an application evolves from a simple locally runnin
 - Container health smoke testing
 - Automated container publishing to GitHub Container Registry
 - Commit-SHA and `latest` Docker image tagging
-- Published container pull-and-run verification 
+- Published container pull-and-run verification
 - Infrastructure provisioning with Terraform
 - AWS VPC networking across multiple public subnets
 - Amazon ECS deployment using AWS Fargate
@@ -43,41 +35,32 @@ The project demonstrates how an application evolves from a simple locally runnin
 - ECS container health checks
 - Automatic unhealthy task replacement
 - Post-deployment health verification
-- ECS deployment circuit breaker with automatic rollback
+- ECS deployment circuit breaker with rollback enabled
 - Cost-conscious ECS scale-to-zero workflow
 - Container image vulnerability scanning with Trivy
-
-
+- Secret scanning with Gitleaks and infrastructure scanning with Trivy
+- GitHub Actions guard that skips AWS deployment when the ECS desired count is zero
+- Local Kubernetes Deployment, Service, namespace, and health probes
+- Kubernetes scaling, self-healing, rolling updates, and rollbacks
+- Kubernetes ConfigMap and demonstration Secret injection
+- Flask environment-based logging configuration
+- Immutable image references in Kubernetes
+- Helm chart installation, configuration upgrades, and rollbacks
 
 ## API Endpoints
 
-
-
 | Endpoint | Purpose |
-
 |----------|---------|
-
 | `/` | Returns RelayDesk service status |
-
 | `/health` | Application health check |
-
-
 
 Example health response:
 
-
-
 ```json
-
 {
-
   "status": "healthy"
-
 }
-
 ```
-
-
 
 ## Technology Stack
 
@@ -99,6 +82,10 @@ Example health response:
 - GitHub OIDC
 - Amazon CloudWatch
 - Amazon SNS
+- Kubernetes (Docker Desktop)
+- Helm
+- Gitleaks
+- Trivy
 
 ## AWS Architecture
 ![RelayDesk CI/CD Pipeline and AWS Architecture](docs/architecture.png)
@@ -139,38 +126,37 @@ RelayDesk also includes:
 - Post-deployment health verification from GitHub Actions
 - Deployment health-check timeouts
 - ECS deployment circuit breaker protection
-- Automatic rollback to the previous healthy deployment when a new deployment fails
+- ECS deployment circuit breaker can initiate rollback after a failed deployment; recovery must be verified
 
 ## CI/CD Pipeline
 
 RelayDesk uses GitHub Actions for continuous integration and deployment.
 
-The application deployment flow is:
+The pipeline uses three jobs: **Test**, **Publish**, and **Deploy**. Tests and security checks run for pull requests; on qualifying application changes pushed to `main`, the tested image is published to GHCR and deployment is evaluated.
 
 ```text
-Git push
+Pull request or push
     ↓
-Automated pytest tests
+Tests, Terraform validation and security scanning
     ↓
-Terraform formatting and validation
+Docker build and smoke test (when applicable)
     ↓
-Application change detection
-    ↓
-Docker image build
-    ↓
-Container smoke test
-    ↓
-Publish image to GHCR
-    ↓
-GitHub OIDC authentication to AWS
-    ↓
-Deploy to Amazon ECS
-    ↓
-Wait for ECS service stability
-    ↓
-Verify the live /health endpoint
-
+Application-changing push to main?
+    ├── No → No image publish or AWS deployment
+    └── Yes → Publish tested image to GHCR
+                    ↓
+             Authenticate to AWS using GitHub OIDC
+                    ↓
+             Check ECS desired task count
+                    ├── 0 → Skip ECS deployment
+                    └── Positive → Update ECS service
+                                      ↓
+                              Wait for service stability
+                                      ↓
+                              Verify live /health endpoint
 ```
+
+The deployment safeguard avoids restarting the ECS service when it has intentionally been scaled to zero.
 
 ## Security and CI/CD Safeguards
 
@@ -214,8 +200,7 @@ RelayDesk is a portfolio environment rather than a fully hardened production dep
 - SNS server-side encryption is not enabled to avoid the recurring cost of a customer-managed KMS key.
 - Accepted Terraform security exceptions are documented alongside the affected resources.
 
-These limitations are intentionally documented and can be addressed in future architecture improvements.
-
+These limitations are intentionally documented and can be addressed in future architecture improvements. The ECS task definition still uses the mutable `latest` image tag, so a deployment rollback does not necessarily restore a previous image version.
 
 ## Operations Runbook
 
@@ -231,7 +216,6 @@ The runbook covers:
 - Stopping ECS resources to minimize AWS costs
 
 **[View the RelayDesk Operations Runbook](docs/OPERATIONS.md)**
-
 
 ## Kubernetes Deployment (Local Environment)
 
@@ -253,86 +237,82 @@ The current Kubernetes environment uses a single local node. AWS EKS deployment 
 
 **[View Kubernetes Deployment Documentation](docs/KUBERNETES.md)**
 
+## Helm Deployment and Release Management
 
+RelayDesk v1.0.0 is packaged as a reusable Helm chart for Kubernetes deployment.
 
-## Planned DevOps Tooling
+The Helm implementation demonstrates:
 
-- Kubernetes
-- Infrastructure automation and configuration management
-- Advanced monitoring and dashboards
-- Secrets management
-- Infrastructure security scanning
-- CI/CD security and policy checks
-- Additional production deployment strategies
+- Helm chart development using reusable Kubernetes templates
+- Configurable deployments through `values.yaml`
+- Immutable GHCR container image references
+- Kubernetes Deployment, Service, ConfigMap, and ServiceAccount management
+- Secure references to externally created Kubernetes Secrets
+- Readiness and liveness probes
+- CPU and memory resource management
+- ServiceAccount token automount disabled
+- Automatic Pod rolling updates using ConfigMap checksum annotations
+- Helm release installation, upgrades, revision history, and rollbacks
 
+**Validated Helm release lifecycle:**
 
+| Revision | Operation | Result |
+|---|---|---|
+| 1 | Initial installation with INFO logging | Successful |
+| 2 | Upgrade to DEBUG logging | Successful |
+| 3 | Rollback to INFO logging | Successful |
 
+The implementation was tested on a local Docker Desktop Kubernetes cluster in the isolated `relaydesk-helm-test` namespace.
 
+**[View Helm Chart](helm/relaydesk/)**
+
+**[View Helm Deployment Documentation](docs/HELM.md)**
+
+## Planned Improvements
+
+RelayDesk currently demonstrates AWS infrastructure automation, CI/CD, containerization, Kubernetes orchestration, Helm release management, security scanning, and monitoring.
+
+The following improvements are planned to further develop the platform:
+
+- **Automated Helm Validation:** Integrate Helm linting and template validation into GitHub Actions.
+- **Kubernetes CI/CD:** Automate Kubernetes deployments using GitHub Actions and Helm.
+- **Advanced Observability:** Implement Prometheus, Grafana dashboards, and application-level metrics.
+- **Production-Grade Secrets Management:** Explore AWS Secrets Manager, External Secrets Operator, and secure credential rotation.
+- **Infrastructure Security:** Expand Terraform security scanning, Kubernetes security policies, and container hardening.
+- **Advanced Deployment Strategies:** Implement blue-green and canary deployments with automated rollback.
+- **Cloud-Native Kubernetes:** Explore Amazon EKS, multi-node infrastructure, and Kubernetes autoscaling.
+- **Application Enhancements:** Expand RelayDesk beyond its initial health-check and status endpoints to demonstrate more realistic application workloads.
 
 ## Running Locally
 
-
-
 Install the application dependencies:
 
-
-
 ```bash
-
 pip install -r requirements.txt
-
 ```
-
-
 
 Run the application:
 
-
-
 ```bash
-
 python app.py
-
 ```
-
-
 
 The service will be available at:
 
-
-
 ```text
-
 http://127.0.0.1:5000
-
 ```
-
-
 
 Health check:
 
-
-
 ```text
-
 http://127.0.0.1:5000/health
-
 ```
-
-
 
 ## Project Goal
 
-
-
 The goal of RelayDesk is to demonstrate practical DevOps and SRE skills through the complete application lifecycle, including development, containerization, CI/CD, infrastructure provisioning, cloud deployment, monitoring, security, and reliability improvements.
-
-
 
 ## Project Status
 
-
-
 Work in progress. Additional DevOps capabilities will be introduced incrementally as the project evolves.
-
-
