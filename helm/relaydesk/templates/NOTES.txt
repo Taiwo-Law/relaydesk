@@ -1,0 +1,45 @@
+
+RelayDesk has been deployed successfully using Helm!
+
+Release: {{ .Release.Name }}
+Namespace: {{ .Release.Namespace }}
+Chart version: {{ .Chart.Version }}
+Application version: {{ .Chart.AppVersion }}
+
+1. Check the Helm release:
+
+   helm status {{ .Release.Name }} --namespace {{ .Release.Namespace }}
+
+2. Verify Kubernetes resources:
+
+   kubectl get pods,services,configmaps -n {{ .Release.Namespace }}
+
+3. Access RelayDesk from Windows PowerShell:
+
+   kubectl port-forward -n {{ .Release.Namespace }} service/{{ include "relaydesk.fullname" . }} 8081:{{ .Values.service.port }}
+
+   Keep this PowerShell window open.
+
+4. Test the application from another PowerShell window:
+
+   Invoke-RestMethod http://localhost:8081/ | ConvertTo-Json
+
+   Invoke-RestMethod http://localhost:8081/health | ConvertTo-Json
+
+5. View Helm release history:
+
+   helm history {{ .Release.Name }} --namespace {{ .Release.Namespace }}
+
+6. Roll back to a previous revision when required:
+
+   helm rollback {{ .Release.Name }} REVISION --namespace {{ .Release.Namespace }}
+
+   Replace REVISION with the desired revision number.
+
+Important:
+
+- RelayDesk uses a ClusterIP Service.
+- Local access requires port forwarding.
+- Application configuration is managed through a ConfigMap.
+- The Kubernetes Secret referenced by this chart must exist in the target namespace before installation.
+- Never commit real Secret values to GitHub.
