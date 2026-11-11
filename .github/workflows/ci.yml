@@ -82,11 +82,16 @@ jobs:
           version: v4.3.1
 
       - name: Lint Helm chart
-        run: helm lint helm/relaydesk
+        run: |
+          helm lint helm/relaydesk
+          helm lint helm/relaydesk -f helm/relaydesk/values-development.yaml
+          helm lint helm/relaydesk -f helm/relaydesk/values-production.yaml
 
       - name: Render Helm templates
         run: |
           helm template relaydesk helm/relaydesk --namespace relaydesk-helm-test > /dev/null
+          helm template relaydesk helm/relaydesk --namespace relaydesk-dev -f helm/relaydesk/values-development.yaml > /dev/null
+          helm template relaydesk helm/relaydesk --namespace relaydesk-prod -f helm/relaydesk/values-production.yaml > /dev/null
           helm template relaydesk helm/relaydesk --namespace relaydesk-helm-test --set configMap.data.LOG_LEVEL=DEBUG > /dev/null
 
 

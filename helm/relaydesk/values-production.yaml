@@ -1,0 +1,18 @@
+
+# RelayDesk production-style environment
+# Demonstration configuration, not a fully production-ready deployment
+
+replicaCount: 2
+
+configMap:
+  data:
+    RELAYDESK_ENV: "production"
+    LOG_LEVEL: "INFO"
+
+resources:
+  requests:
+    cpu: "250m"
+    memory: "256Mi"
+  limits:
+    cpu: "1000m"
+    memory: "1Gi"

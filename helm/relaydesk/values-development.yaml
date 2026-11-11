@@ -1,0 +1,17 @@
+
+# RelayDesk development environment
+
+replicaCount: 1
+
+configMap:
+  data:
+    RELAYDESK_ENV: "development"
+    LOG_LEVEL: "DEBUG"
+
+resources:
+  requests:
+    cpu: "100m"
+    memory: "128Mi"
+  limits:
+    cpu: "500m"
+    memory: "512Mi"
